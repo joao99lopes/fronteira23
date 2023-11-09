@@ -39,6 +39,8 @@ def retrieve_data(ts:str) -> dict:
     if req.status_code == 200:
         response_text = req.text.lstrip('\ufeff')
         data = json.loads(response_text)
+        # with open(os.path.join(os.getcwd(), 'test-db.json'), 'w') as fp:
+        #     json.dump(data, fp)
         for i in data.keys():
             if i == "Colonnes":
                 col = data[i]
