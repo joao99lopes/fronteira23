@@ -1,5 +1,4 @@
 import time
-import sys
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -39,7 +38,8 @@ def main():
                 if has_data==False:
                     write_header(sheet)
             new_data=data_dict_to_list(new_value, last_value)
-            append_to_sheet(sheet, new_data, last_value)
+            append_to_general_sheet(sheet, new_data, last_value)
+            append_to_teams_sheet(sheet, new_data, last_value)
             
             last_value=new_value
             time.sleep(5)

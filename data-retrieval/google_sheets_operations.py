@@ -1,6 +1,7 @@
 from constants import *
 from datetime import datetime
 
+
 def parse_sheet_values(sheet_values:list) -> dict:
     res = {}
     header = sheet_values[0]
@@ -36,7 +37,36 @@ def add_cell_format(cell, data_row, last_team_values) -> dict:
     return cell_with_formatting
 
 
-def append_to_sheet(sheet, data_to_add, last_values):
+def write_header(sheet):
+    requests = []
+    row_values=[]
+    for col in COLUMNS_TO_USE:
+        cell_with_formatting = {
+            "userEnteredValue": {"stringValue": col},
+            "userEnteredFormat": {"textFormat": {"bold": True}}
+        }
+        row_values.append(cell_with_formatting)
+
+    requests.append({
+        "updateCells": {
+            "rows": [
+                {
+                    "values": row_values
+                }
+            ],
+            "start": {"sheetId": 0, "rowIndex":0, "columnIndex": 0},
+            "fields": "userEnteredValue,userEnteredFormat.textFormat.bold"
+        }
+    })
+
+    # Execute the batch update request
+    result = sheet.batchUpdate(
+        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
+        body={'requests': requests}
+    ).execute()
+
+
+def append_to_general_sheet(sheet, data_to_add, last_values):
     requests = []
 
     # Calculate the number of new rows to insert based on the size of data_to_add
@@ -86,33 +116,42 @@ def append_to_sheet(sheet, data_to_add, last_values):
     ).execute()
 
 
-def write_header(sheet):
+def append_to_teams_sheet(sheet, data_to_add):
+    cols = ['DAY TIME', 'POS', 'LAP', 'LAP TIME', 'TOTAL TIME', 'DRIVER']
     requests = []
-    row_values=[]
-    for col in COLUMNS_TO_USE:
-        cell_with_formatting = {
-            "userEnteredValue": {"stringValue": col},
-            "userEnteredFormat": {"textFormat": {"bold": True}}
-        }
-        row_values.append(cell_with_formatting)
+    
+    for i in range(len(data_to_add)):
+        data_row = data_to_add[i]
+        
+        # SACAR DADOS COLUNA EQUIPA
+        # PUXAR ESSAS COLUNAS PARA BAIXO
+        # ADICIONAR NOVOS VALORES (PINTAR SE TROCAR PILOTO) -> PINTAR SE TEMPO PILOTO FOR 3MINS MAIOR QUE MEDIA DO PILOTO
+        # ATUALIZAR MELHOR VOLTA MEDIA TEMPO MEDIA PILOTO
+        
+        
+        # last_team_values = {}
+        # if data_row[TEAM_NR_POS] in list(last_values.keys()):
+        #     last_team_values = last_values[data_row[TEAM_NR_POS]]
+        # row_values = []
 
-    requests.append({
-        "updateCells": {
-            "rows": [
-                {
-                    "values": row_values
-                }
-            ],
-            "start": {"sheetId": 0, "rowIndex":0, "columnIndex": 0},
-            "fields": "userEnteredValue,userEnteredFormat.textFormat.bold"
-        }
-    })
+        # for j in range(len(data_row)):
+        #     cell = data_row[j]
+        #     cell_with_formatting = add_cell_format(cell, data_row, last_team_values)
 
-    # Execute the batch update request
-    result = sheet.batchUpdate(
-        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
-        body={'requests': requests}
-    ).execute()
+        #     row_values.append(cell_with_formatting)
+        #     requests.append({
+        #         "updateCells": {
+        #             "rows": [
+        #                 {
+        #                     "values": row_values
+        #                 }
+        #             ],
+        #             "start": {"sheetId": 0, "rowIndex": 1+i, "columnIndex": 0},  # Start from the 2nd row
+        #             "fields": "userEnteredValue,userEnteredFormat.textFormat.bold,userEnteredFormat.backgroundColor"
+        #         }
+        # })
+    
+    return
 
 
 def data_dict_to_list(new_values:dict, old_values:dict):
