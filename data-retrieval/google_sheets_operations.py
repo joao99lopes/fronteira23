@@ -1,5 +1,5 @@
 from constants import *
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 def parse_sheet_values(sheet_values:list) -> dict:
@@ -131,57 +131,64 @@ def append_to_teams_sheet(sheet, data_to_add):
     
     if len(current_sheet_values) > 13:
         for i in range(len(OBSERVING_TEAMS)):
-            for j in range(13, len(parse_sheet_values)):
-                
-                break
-            # SACAR DADOS COLUNA EQUIPA
-            # PUXAR ESSAS COLUNAS PARA BAIXO
-            # ADICIONAR NOVOS VALORES (PINTAR SE TROCAR PILOTO) -> PINTAR SE TEMPO PILOTO FOR 3MINS MAIOR QUE MEDIA DO PILOTO
-            # ATUALIZAR MELHOR VOLTA MEDIA TEMPO MEDIA PILOTO
+            team_laps = {}
+            for j in range(13, len(current_sheet_values)):
+                if i*len(INFO_TEAM_TABLE_HEADER) in range(len(current_sheet_values[j])):
+                    start_index = i*len(INFO_TEAM_TABLE_HEADER)
+                    if current_sheet_values[j][start_index] != '':
+                        lap_info = current_sheet_values[j][start_index : start_index + len(INFO_TEAM_TABLE_HEADER)]
+                        team_laps[lap_info[0]] = lap_info
+            if team_laps != {}:
+                data_per_team[OBSERVING_TEAMS[i]] = team_laps
 
     for team_data_line in data_to_add:
-        tmp_team_data = {}
         lap_info = {}
-        lap_info['day_time'] = team_data_line[0]
-        lap_info['team_pos'] = team_data_line[1]
+        lap_info['LAP'] = team_data_line[5]
+        lap_info['DAY TIME'] = team_data_line[0]
+        lap_info['POS'] = team_data_line[1]
+        lap_info['LAP TIME'] = team_data_line[7]
+        lap_info['TOTAL TIME'] = team_data_line[6]
+        lap_info['DRIVER'] = team_data_line[3]
         lap_info['team_nr'] = team_data_line[2]
-        lap_info['team_driver'] = team_data_line[3]
-        lap_info['team_lap'] = team_data_line[5]
-        lap_info['team_total_time'] = team_data_line[6]
-        lap_info['team_lap_time'] = team_data_line[7]
         lap_info['team_best_lap'] = team_data_line[8]
-        tmp_team_data[lap_info['team_lap']] = tmp_team_data
-        data_per_team[lap_info['team_nr']] = tmp_team_data
-    
-    
+        if lap_info["team_nr"] not in data_per_team.keys():
+            data_per_team[lap_info['team_nr']] = {lap_info['LAP']:list(lap_info.values())}
+        else:
+            data_per_team[lap_info['team_nr']][lap_info['LAP']] = list(lap_info.values())
+            
     for i in range(len(OBSERVING_TEAMS)):
         if OBSERVING_TEAMS[i] in data_per_team.keys():
             team_data_to_add = data_per_team[OBSERVING_TEAMS[i]]
-            sorted_laps_list = sorted(list(team_data_to_add.keys()), reverse=True)
+            sorted_laps_list = sorted(team_data_to_add.keys(), key=lambda lap_nr: int(lap_nr), reverse=True)
+            
+            last_lap_info = team_data_to_add[sorted_laps_list[0]]
+
+            # write header
+            requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER)))
+            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_LAP_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER)))
+            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], int(last_lap_info[TEAM_INFO_LAP_INDEX])), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER)))
+            fastest_lap = team_fastest_lap(team_data_to_add)
+            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER)))
+            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER)))
+
             for j in range(len(sorted_laps_list)):
-                requests.append({
-                    "updateCells": {
-                        "rows": [
-                            {
-                                "values": {"userEnteredValue": {"stringValue": sorted_laps_list[j]}}
-                            }
-                        ],
-                        "start": {"sheetId": 0, "rowIndex": 13+j, "columnIndex": i*len(INFO_TEAM_TABLE_HEADER)},  # Start from the 2nd row
-                        "fields": "userEnteredValue,userEnteredFormat.textFormat.bold,userEnteredFormat.backgroundColor"
-                    }
-                })
-    # Execute the batch update request
-    result = sheet.batchUpdate(
-        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
-        body={'requests': requests}
-    ).execute()
+                lap_info = team_data_to_add[sorted_laps_list[j]]
+                for k in range(len(INFO_TEAM_TABLE_HEADER)):
+                    requests.append(simple_data_cell(lap_info[k], FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(INFO_TEAM_TABLE_HEADER)))
+    if len(requests) > 0:
+        # Execute the batch update request
+        result = sheet.batchUpdate(
+            spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
+            body={'requests': requests}
+        ).execute()
+        
 
 def data_dict_to_list(new_values:dict, old_values:dict):
     res_list = []
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     for key in list(new_values.keys()):
-        if key not in list (old_values.keys()) or new_values[key] != old_values[key]:
+        # if key not in list (old_values.keys()) or new_values[key] != old_values[key]:
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
@@ -204,3 +211,30 @@ def print_teams_info_header(sheet):
         body={'values': requests},
         valueInputOption='RAW'
     ).execute()
+    
+    
+def simple_data_cell(value, sheet_id, row_index, col_index) -> dict:
+    return {
+        "updateCells": {
+            "rows": [
+                {
+                    "values": {"userEnteredValue": {"stringValue": value}}
+                }
+            ],
+            "start": {"sheetId": sheet_id, "rowIndex": row_index, "columnIndex": col_index},
+            "fields": "userEnteredValue,userEnteredFormat.textFormat.bold,userEnteredFormat.backgroundColor"
+        }
+    }
+
+
+def mean_time_per_lap(total_time_str, num_laps) -> str:
+    total_seconds = sum(int(x) * 60 ** i for i, x in enumerate(reversed(total_time_str.split('.')[0].split(':'))))
+    mean_total_seconds, mean_secs = divmod(total_seconds / num_laps, 60)
+    mean_hours, mean_mins = divmod(mean_total_seconds, 60)
+    return f"{int(mean_hours):02d}:{int(mean_mins):02d}:{int(mean_secs):02d}"
+
+def team_fastest_lap(team_laps) -> list:
+    laps = list(team_laps.values())
+    sorted_laps_per_time = sorted(laps, key=lambda lap: lap[TEAM_INFO_LAP_TIME_INDEX])
+    return sorted_laps_per_time[0]
+    

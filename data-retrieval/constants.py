@@ -4,6 +4,8 @@ FRONTEIRA_SPREADSHEET_ID = '1ENpIhUNnZt3IJ96UB3uhrHk3WFKbf8Ys7duHRhiiod8'
 SAMPLE_RANGE_NAME = 'Class Data!A2:E'
 FRONTEIRA_DB_SHEET = 'DATA DB'
 FRONTEIRA_TEAMS_SHEET = 'TEAMS INFO'
+FRONTEIRA_DB_SHEET_ID = 0
+FRONTEIRA_TEAMS_INFO_SHEET_ID = 1973410618
 
 COLUMNS_TO_USE = ['DateTime', 'Position(Pos.)', 'Numero(No.)', 'Nom(Driver)', 'Groupe(Grp)', 'NbTour(Laps)', 'TpsCumule(Total time)', 'TpsTour(Lap time)', 'MeilleurTour(Best lap)', 'PenaliteNbTour(Laps penality)']
 
@@ -31,3 +33,10 @@ INFO_TEAM_TEMPLATE_HEADER=[
     ['DRIVER 5', 'drivername5', 'meantime', 'fastlaptime'],
 ]
 INFO_TEAM_TABLE_HEADER = ['LAP', 'DAY TIME', 'POS', 'LAP TIME', 'TOTAL TIME', 'DRIVER']
+
+TEAM_INFO_LAP_INDEX = 0
+TEAM_INFO_DAY_TIME_INDEX = 1
+TEAM_INFO_POS_INDEX = 2
+TEAM_INFO_LAP_TIME_INDEX = 3
+TEAM_INFO_TOTAL_TIME_INDEX = 4
+TEAM_INFO_DRIVER_INDEX = 5
