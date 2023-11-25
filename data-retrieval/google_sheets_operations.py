@@ -164,17 +164,21 @@ def append_to_teams_sheet(sheet, data_to_add):
             last_lap_info = team_data_to_add[sorted_laps_list[0]]
 
             # write header
-            requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER)))
-            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_LAP_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER)))
-            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], int(last_lap_info[TEAM_INFO_LAP_INDEX])), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER)))
+            requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_LAP_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], int(last_lap_info[TEAM_INFO_LAP_INDEX])), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             fastest_lap = team_fastest_lap(team_data_to_add)
-            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER)))
-            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER)))
+            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
 
             for j in range(len(sorted_laps_list)):
                 lap_info = team_data_to_add[sorted_laps_list[j]]
+                color_style = 'background'
+                if j>0 and lap_info[TEAM_INFO_DRIVER_INDEX] != team_data_to_add[sorted_laps_list[j-1]][TEAM_INFO_DRIVER_INDEX]:
+                    color_style = 'pilot_change'
                 for k in range(len(INFO_TEAM_TABLE_HEADER)):
-                    requests.append(simple_data_cell(lap_info[k], FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(INFO_TEAM_TABLE_HEADER)))
+                    requests.append(simple_data_cell(lap_info[k], FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(INFO_TEAM_TABLE_HEADER), i, color_style))
+                    
     if len(requests) > 0:
         # Execute the batch update request
         result = sheet.batchUpdate(
@@ -213,12 +217,15 @@ def print_teams_info_header(sheet):
     ).execute()
     
     
-def simple_data_cell(value, sheet_id, row_index, col_index) -> dict:
+def simple_data_cell(value, sheet_id, row_index, col_index, team_index, color_style) -> dict:
     return {
         "updateCells": {
             "rows": [
                 {
-                    "values": {"userEnteredValue": {"stringValue": value}}
+                    "values": {
+                        "userEnteredValue": {"stringValue": value},
+                        "userEnteredFormat": {"backgroundColor": COLORS[team_index][color_style]}
+                        }
                 }
             ],
             "start": {"sheetId": sheet_id, "rowIndex": row_index, "columnIndex": col_index},
@@ -237,4 +244,3 @@ def team_fastest_lap(team_laps) -> list:
     laps = list(team_laps.values())
     sorted_laps_per_time = sorted(laps, key=lambda lap: lap[TEAM_INFO_LAP_TIME_INDEX])
     return sorted_laps_per_time[0]
-    

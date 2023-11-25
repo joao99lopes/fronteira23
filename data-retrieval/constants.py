@@ -40,3 +40,20 @@ TEAM_INFO_POS_INDEX = 2
 TEAM_INFO_LAP_TIME_INDEX = 3
 TEAM_INFO_TOTAL_TIME_INDEX = 4
 TEAM_INFO_DRIVER_INDEX = 5
+
+TEAM_1_COLORS = {
+    'background' : {"red": 0.8, "green": 1.0, "blue": 0.8},
+    'pilot_change' : {"red": 0.7, "green": 1.0, "blue": 0.7},
+}
+
+TEAM_2_COLORS = {
+    'background' : {"red": 1.0, "green": 0.8, "blue": 0.8},
+    'pilot_change' : {"red": 1.0, "green": 0.7, "blue": 0.7},
+}
+
+TEAM_3_COLORS = {
+    'background' : {"red": 0.7, "green": 0.8, "blue": 1.0},
+    'pilot_change' : {"red": 0.8, "green": 0.8, "blue": 1.0},
+}
+
+COLORS = [TEAM_1_COLORS, TEAM_2_COLORS, TEAM_3_COLORS]
