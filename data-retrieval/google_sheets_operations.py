@@ -165,16 +165,22 @@ def append_to_teams_sheet(sheet, data_to_add):
 
             # write header
             requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_LAP_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_POS_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], int(last_lap_info[TEAM_INFO_LAP_INDEX])), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            fastest_lap = team_fastest_lap(team_data_to_add)
+            fastest_lap = team_fastest_lap(list(team_data_to_add.values()))
             requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-
+            driver_times = mean_time_per_driver(list(team_data_to_add.values()))
+            for j in range(len(driver_times)):
+                requests.append(simple_data_cell(driver_times[j]['driver'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+                requests.append(simple_data_cell(driver_times[j]['mean time'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+                requests.append(simple_data_cell(driver_times[j]['fastest lap'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 3+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+                
+                
             for j in range(len(sorted_laps_list)):
                 lap_info = team_data_to_add[sorted_laps_list[j]]
                 color_style = 'background'
-                if j>0 and lap_info[TEAM_INFO_DRIVER_INDEX] != team_data_to_add[sorted_laps_list[j-1]][TEAM_INFO_DRIVER_INDEX]:
+                if j<len(sorted_laps_list)-1 and lap_info[TEAM_INFO_DRIVER_INDEX] != team_data_to_add[sorted_laps_list[j+1]][TEAM_INFO_DRIVER_INDEX]:
                     color_style = 'pilot_change'
                 for k in range(len(INFO_TEAM_TABLE_HEADER)):
                     requests.append(simple_data_cell(lap_info[k], FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(INFO_TEAM_TABLE_HEADER), i, color_style))
@@ -192,7 +198,7 @@ def data_dict_to_list(new_values:dict, old_values:dict):
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     for key in list(new_values.keys()):
-        # if key not in list (old_values.keys()) or new_values[key] != old_values[key]:
+        if key not in list (old_values.keys()) or new_values[key] != old_values[key]:
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
@@ -240,7 +246,34 @@ def mean_time_per_lap(total_time_str, num_laps) -> str:
     mean_hours, mean_mins = divmod(mean_total_seconds, 60)
     return f"{int(mean_hours):02d}:{int(mean_mins):02d}:{int(mean_secs):02d}"
 
+
 def team_fastest_lap(team_laps) -> list:
-    laps = list(team_laps.values())
-    sorted_laps_per_time = sorted(laps, key=lambda lap: lap[TEAM_INFO_LAP_TIME_INDEX])
+    sorted_laps_per_time = sorted(team_laps, key=lambda lap: lap[TEAM_INFO_LAP_TIME_INDEX])
     return sorted_laps_per_time[0]
+
+
+def mean_time_per_driver(team_laps) -> list:
+    res = []
+    driver_times = {}
+    for lap in team_laps:
+        if "Pit In" not in lap[TEAM_INFO_LAP_TIME_INDEX]:
+            if lap[TEAM_INFO_DRIVER_INDEX] not in list(driver_times.keys()):
+                driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = [lap[TEAM_INFO_LAP_TIME_INDEX]]
+            else:
+                driver_times[lap[TEAM_INFO_DRIVER_INDEX]].append(lap[TEAM_INFO_LAP_TIME_INDEX])
+    
+    for driver in list(driver_times.keys()):
+        total_time_sec = 0
+        for lap_time in driver_times[driver]:
+            lap_time_str = lap_time.split(".")[0].split(":")
+            total_time_sec += int(lap_time_str[0])*60 + int(lap_time_str[1])
+        
+        mean_time_sec = total_time_sec / len(driver_times[driver])
+        mean_time = f"{int(mean_time_sec//60):02d}:{int(mean_time_sec%60):02d}"
+        
+        res.append({
+            'driver':driver,
+            'mean time':mean_time,
+            'fastest lap':sorted(driver_times[driver], key=lambda lap_time: lap_time)[0]
+        })
+    return res
