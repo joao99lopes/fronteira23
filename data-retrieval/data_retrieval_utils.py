@@ -9,7 +9,7 @@ def retrieve_mock_data():
     mock_file = MOCK_DATA_FILES[randint(0, len(MOCK_DATA_FILES)-1)]
     print(f"MOCKING FROM: {mock_file}")
     data = {}
-    with open(os.path.join(os.getcwd(), 'mock-data', mock_file)) as fp:
+    with open(os.path.join(os.getcwd(), 'data-retrieval', 'mock-data', mock_file)) as fp:
         data = json.load(fp)
     res = parse_retrieved_data(data)
     for i in res.keys():
@@ -47,7 +47,7 @@ def parse_retrieved_data(data:dict):
         if i =="Donnees":
             lines = data[i]
             for line in lines:
-                if line[TEAM_NR_POS] in TEAMS_OBSERVER_LIST: 
+                if line[TEAM_NR_POS] in OBSERVING_TEAMS: 
                     fields_per_team[line[TEAM_NR_POS]] = line
     
     for team_id in list(fields_per_team.keys()):
