@@ -255,25 +255,42 @@ def team_fastest_lap(team_laps) -> list:
 def mean_time_per_driver(team_laps) -> list:
     res = []
     driver_times = {}
+    driver_times_mean = {}
     for lap in team_laps:
         if "Pit In" not in lap[TEAM_INFO_LAP_TIME_INDEX]:
             if lap[TEAM_INFO_DRIVER_INDEX] not in list(driver_times.keys()):
-                driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = [lap[TEAM_INFO_LAP_TIME_INDEX]]
+                # driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = [lap[TEAM_INFO_LAP_TIME_INDEX]]
+                driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = {lap[TEAM_INFO_LAP_INDEX]:lap[TEAM_INFO_LAP_TIME_INDEX]}  # ignore
             else:
-                driver_times[lap[TEAM_INFO_DRIVER_INDEX]].append(lap[TEAM_INFO_LAP_TIME_INDEX])
-    
+                # driver_times[lap[TEAM_INFO_DRIVER_INDEX]].append(lap[TEAM_INFO_LAP_TIME_INDEX])
+                driver_times[lap[TEAM_INFO_DRIVER_INDEX]][lap[TEAM_INFO_LAP_INDEX]] = lap[TEAM_INFO_LAP_TIME_INDEX]
+
+    for driver in list(driver_times.keys()):
+        last_lap = None
+        filtered_laps = []
+        for lap_nr in sorted(list(driver_times[driver].keys())):
+            if not (last_lap == None or int(last_lap) < int(lap_nr)-1):
+                filtered_laps.append(driver_times[driver][lap_nr])
+            last_lap = lap_nr
+        driver_times_mean[driver] = filtered_laps
+
     for driver in list(driver_times.keys()):
         total_time_sec = 0
-        for lap_time in driver_times[driver]:
+        for lap_time in driver_times_mean[driver]:
             lap_time_str = lap_time.split(".")[0].split(":")
             total_time_sec += int(lap_time_str[0])*60 + int(lap_time_str[1])
         
-        mean_time_sec = total_time_sec / len(driver_times[driver])
-        mean_time = f"{int(mean_time_sec//60):02d}:{int(mean_time_sec%60):02d}"
+        mean_time = "N/A"
+        fast_time = "N/A"
+        if len(driver_times_mean[driver]) > 0:
+            mean_time_sec = total_time_sec / len(driver_times_mean[driver])
+            mean_time = f"{int(mean_time_sec//60):02d}:{int(mean_time_sec%60):02d}"
+        if len(driver_times[driver]) > 0:
+            fast_time = sorted(list(driver_times[driver].values()), key=lambda lap_time: lap_time)[0]
         
         res.append({
             'driver':driver,
             'mean time':mean_time,
-            'fastest lap':sorted(driver_times[driver], key=lambda lap_time: lap_time)[0]
+            'fastest lap':fast_time
         })
     return res
