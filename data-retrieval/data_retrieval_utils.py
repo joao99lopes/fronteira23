@@ -25,8 +25,6 @@ def retrieve_data(ts:str) -> dict:
     if req.status_code == 200:
         response_text = req.text.lstrip('\ufeff')
         data = json.loads(response_text)
-        # with open(os.path.join(os.getcwd(), 'mock-data', 'mock-db-request.json'), 'w') as fp:
-        #     json.dump(data, fp)
         res = parse_retrieved_data(data)
         for i in res.keys():
             print(f"{i}: {res[i]}")
