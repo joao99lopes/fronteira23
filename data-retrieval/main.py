@@ -18,8 +18,12 @@ def main():
 
         has_data = True
         last_value = {}
+    except HttpError as err:
+        print(err)
+
         
-        while True:
+    while True:
+        try:
             #get current state of DB
             result = sheet.values().get(spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
                                         range=FRONTEIRA_DB_SHEET).execute()
@@ -44,10 +48,10 @@ def main():
             last_value=new_value
             time.sleep(5)
             print("\n--------\n")
+        except HttpError as err:
+            print(datetime.now())
+            print(err)
       
-    except HttpError as err:
-        print(err)
-
 
 if __name__ == '__main__':
     main()
