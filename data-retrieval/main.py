@@ -5,7 +5,7 @@ from googleapiclient.errors import HttpError
 from data_retrieval_utils import *
 from google_sheets_operations import *
 from google_auth import check_credentials
-
+import constants
 def main():
     """Shows basic usage of the Sheets API.
     Prints values from a sample spreadsheet.
@@ -24,9 +24,10 @@ def main():
         
     while True:
         try:
+            importlib.reload(constants)
             #get current state of DB
-            result = sheet.values().get(spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
-                                        range=FRONTEIRA_DB_SHEET).execute()
+            result = sheet.values().get(spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
+                                        range=constants.FRONTEIRA_DB_SHEET).execute()
             values = result.get('values', [])
 
             if not values:
@@ -35,8 +36,8 @@ def main():
             else:
                 last_value = parse_sheet_values(values)
 
-            new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
-#            new_value = retrieve_mock_data()                            # USE IN DEV
+            # new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
+            new_value = retrieve_mock_data()                            # USE IN DEV
             if (new_value != last_value):
                 print("######################\n##### NEW VALUES #####\n######################\n")
                 if has_data==False:
@@ -46,7 +47,7 @@ def main():
             append_to_teams_sheet(sheet, new_data)
             
             last_value=new_value
-            time.sleep(REQUEST_TIMEOUT)
+            time.sleep(constants.REQUEST_TIMEOUT)
             print("\n--------\n")
         except HttpError as err:
             print(datetime.now())

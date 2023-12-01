@@ -1,4 +1,5 @@
-from constants import *
+import constants
+import importlib
 from datetime import datetime, timedelta
 
 
@@ -6,18 +7,18 @@ def parse_sheet_values(sheet_values:list) -> dict:
     res = {}
     header = sheet_values[0]
     for i in range(1,len(sheet_values)):
-        if (sheet_values[i][TEAM_NR_POS]) in res:
+        if (sheet_values[i][ constants.TEAM_NR_POS]) in res:
             continue
         team_info = {}
         for j in range(1,len(sheet_values[i])):
             team_info[header[j]] = sheet_values[i][j]
-        res[sheet_values[i][TEAM_NR_POS]] = team_info
+        res[sheet_values[i][constants.TEAM_NR_POS]] = team_info
     return res
 
 
 def add_cell_format(stringValue, data_row, last_team_values) -> dict:
     cell_with_formatting = {"userEnteredValue": {"stringValue": stringValue}}
-    if data_row[TEAM_NR_POS] == MY_TEAM:
+    if data_row[constants.TEAM_NR_POS] == constants.MY_TEAM:
         # Apply bold formatting to the cell
         if "userEnteredFormat" in list(cell_with_formatting.keys()):        
             cell_with_formatting["userEnteredFormat"]["textFormat"] = {"bold":True}
@@ -26,7 +27,7 @@ def add_cell_format(stringValue, data_row, last_team_values) -> dict:
                 "textFormat": {"bold": True},
                 "backgroundColor": {"red": 1.0, "green": 1.0, "blue": 0.0}
             }
-    if last_team_values != {} and data_row[DRIVER_POS] != last_team_values[COLUMNS_TO_USE[DRIVER_POS]]:
+    if last_team_values != {} and data_row[constants.DRIVER_POS] != last_team_values[constants.COLUMNS_TO_USE[constants.DRIVER_POS]]:
         # Apply bold formatting to the cell
         if "userEnteredFormat" in list(cell_with_formatting.keys()):        
             cell_with_formatting["userEnteredFormat"]["backgroundColor"] = {"red": 0.0, "green": 1.0, "blue": 0.0}
@@ -40,7 +41,7 @@ def add_cell_format(stringValue, data_row, last_team_values) -> dict:
 def write_header(sheet):
     requests = []
     row_values=[]
-    for col in COLUMNS_TO_USE:
+    for col in constants.COLUMNS_TO_USE:
         cell_with_formatting = {
             "userEnteredValue": {"stringValue": col},
             "userEnteredFormat": {"textFormat": {"bold": True}}
@@ -61,7 +62,7 @@ def write_header(sheet):
 
     # Execute the batch update request
     result = sheet.batchUpdate(
-        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
+        spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
         body={'requests': requests}
     ).execute()
 
@@ -88,8 +89,8 @@ def append_to_general_sheet(sheet, data_to_add, last_values):
     for i in range(num_new_rows):
         data_row = data_to_add[i]
         last_team_values = {}
-        if data_row[TEAM_NR_POS] in list(last_values.keys()):
-            last_team_values = last_values[data_row[TEAM_NR_POS]]
+        if data_row[constants.TEAM_NR_POS] in list(last_values.keys()):
+            last_team_values = last_values[data_row[constants.TEAM_NR_POS]]
         row_values = []
 
         for j in range(len(data_row)):
@@ -111,16 +112,18 @@ def append_to_general_sheet(sheet, data_to_add, last_values):
 
     # Execute the batch update request
     result = sheet.batchUpdate(
-        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
+        spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
         body={'requests': requests}
     ).execute()
 
 
 def append_to_teams_sheet(sheet, data_to_add):
+    importlib.reload(constants)
+
     requests = []
 
-    current_sheet_values_request = sheet.values().get(spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
-                                range=FRONTEIRA_TEAMS_SHEET).execute()
+    current_sheet_values_request = sheet.values().get(spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
+                                range=constants.FRONTEIRA_TEAMS_SHEET).execute()
     current_sheet_values = current_sheet_values_request.get('values', [])
 
     if not current_sheet_values:
@@ -130,16 +133,16 @@ def append_to_teams_sheet(sheet, data_to_add):
     data_per_team = {}
     
     if len(current_sheet_values) > 13:
-        for i in range(len(OBSERVING_TEAMS)):
+        for i in range(len(constants.OBSERVING_TEAMS)):
             team_laps = {}
             for j in range(13, len(current_sheet_values)):
-                if i*len(INFO_TEAM_TABLE_HEADER) in range(len(current_sheet_values[j])):
-                    start_index = i*len(INFO_TEAM_TABLE_HEADER)
+                if i*len(constants.INFO_TEAM_TABLE_HEADER) in range(len(current_sheet_values[j])):
+                    start_index = i*len(constants.INFO_TEAM_TABLE_HEADER)
                     if current_sheet_values[j][start_index] != '':
-                        lap_info = current_sheet_values[j][start_index : start_index + len(INFO_TEAM_TABLE_HEADER)]
+                        lap_info = current_sheet_values[j][start_index : start_index + len(constants.INFO_TEAM_TABLE_HEADER)]
                         team_laps[lap_info[0]] = lap_info
             if team_laps != {}:
-                data_per_team[OBSERVING_TEAMS[i]] = team_laps
+                data_per_team[constants.OBSERVING_TEAMS[i]] = team_laps
 
     for team_data_line in data_to_add:
         lap_info = {}
@@ -157,39 +160,39 @@ def append_to_teams_sheet(sheet, data_to_add):
             lap_id = str(len(data_per_team[lap_info['team_nr']]))
             data_per_team[lap_info['team_nr']][lap_id] = [lap_id]+list(lap_info.values())
             
-    for i in range(len(OBSERVING_TEAMS)):
-        if OBSERVING_TEAMS[i] in data_per_team.keys():
-            team_data_to_add = data_per_team[OBSERVING_TEAMS[i]]
+    for i in range(len(constants.OBSERVING_TEAMS)):
+        if constants.OBSERVING_TEAMS[i] in data_per_team.keys():
+            team_data_to_add = data_per_team[constants.OBSERVING_TEAMS[i]]
             sorted_laps_list = sorted(team_data_to_add.keys(), key=lambda lap_nr: int(lap_nr), reverse=True)
             
             last_lap_info = team_data_to_add[sorted_laps_list[0]]
 
             # write header
-            requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            requests.append(simple_data_cell(last_lap_info[TEAM_INFO_POS_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], len(team_data_to_add)), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(constants.OBSERVING_TEAMS[i], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(last_lap_info[constants.TEAM_INFO_POS_INDEX], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[constants.TEAM_INFO_TOTAL_TIME_INDEX], len(team_data_to_add)), constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
             fastest_lap = team_fastest_lap(list(team_data_to_add.values()))
-            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(fastest_lap[constants.TEAM_INFO_LAP_TIME_INDEX], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(fastest_lap[constants.TEAM_INFO_DRIVER_INDEX], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
             driver_times = mean_time_per_driver(list(team_data_to_add.values()))
             for j in range(len(driver_times)):
-                requests.append(simple_data_cell(driver_times[j]['driver'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-                requests.append(simple_data_cell(driver_times[j]['mean time'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-                requests.append(simple_data_cell(driver_times[j]['fastest lap'], FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 3+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+                requests.append(simple_data_cell(driver_times[j]['driver'], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 1+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
+                requests.append(simple_data_cell(driver_times[j]['mean time'], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 2+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
+                requests.append(simple_data_cell(driver_times[j]['fastest lap'], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 6+j, 3+i*len(constants.INFO_TEAM_TABLE_HEADER), i, 'background'))
                 
                 
             for j in range(len(sorted_laps_list)):
                 lap_info = team_data_to_add[sorted_laps_list[j]]
                 color_style = 'background'
-                if j<len(sorted_laps_list)-1 and lap_info[TEAM_INFO_DRIVER_INDEX] != team_data_to_add[sorted_laps_list[j+1]][TEAM_INFO_DRIVER_INDEX]:
+                if j<len(sorted_laps_list)-1 and lap_info[constants.TEAM_INFO_DRIVER_INDEX] != team_data_to_add[sorted_laps_list[j+1]][constants.TEAM_INFO_DRIVER_INDEX]:
                     color_style = 'pilot_change'
-                for k in range(len(INFO_TEAM_TABLE_HEADER)):
-                    requests.append(simple_data_cell(lap_info[k], FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(INFO_TEAM_TABLE_HEADER), i, color_style))
+                for k in range(len(constants.INFO_TEAM_TABLE_HEADER)):
+                    requests.append(simple_data_cell(lap_info[k], constants.FRONTEIRA_TEAMS_INFO_SHEET_ID, 13+j, k+i*len(constants.INFO_TEAM_TABLE_HEADER), i, color_style))
                     
     if len(requests) > 0:
         # Execute the batch update request
         result = sheet.batchUpdate(
-            spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
+            spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
             body={'requests': requests}
         ).execute()
         
@@ -199,38 +202,38 @@ def data_dict_to_list(new_values:dict, old_values:dict):
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     for key in list(new_values.keys()):
-        if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
+        # if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
 
 def print_teams_info_header(sheet):
-    empty_line = [''] * len(INFO_TEAM_TABLE_HEADER) * len(OBSERVING_TEAMS)
-    requests = [empty_line[:] for _ in range(len(INFO_TEAM_TEMPLATE_HEADER))]
+    empty_line = [''] * len(constants.INFO_TEAM_TABLE_HEADER) * len(constants.OBSERVING_TEAMS)
+    requests = [empty_line[:] for _ in range(len(constants.INFO_TEAM_TEMPLATE_HEADER))]
     
-    for i in range(len(OBSERVING_TEAMS)):
-        for j in range(len(INFO_TEAM_TEMPLATE_HEADER)):
-            for k in range(len(INFO_TEAM_TEMPLATE_HEADER[j])):
-                field = INFO_TEAM_TEMPLATE_HEADER[j][k]
+    for i in range(len(constants.OBSERVING_TEAMS)):
+        for j in range(len(constants.INFO_TEAM_TEMPLATE_HEADER)):
+            for k in range(len(constants.INFO_TEAM_TEMPLATE_HEADER[j])):
+                field = constants.INFO_TEAM_TEMPLATE_HEADER[j][k]
                 if field == "teamNr":
-                    field = OBSERVING_TEAMS[i]
-                requests[j][k + i * len(INFO_TEAM_TABLE_HEADER)] = field
+                    field = constants.OBSERVING_TEAMS[i]
+                requests[j][k + i * len(constants.INFO_TEAM_TABLE_HEADER)] = field
     requests.append(empty_line)
-    requests.append(INFO_TEAM_TABLE_HEADER * len(OBSERVING_TEAMS))
+    requests.append(constants.INFO_TEAM_TABLE_HEADER * len(constants.OBSERVING_TEAMS))
 
     # Execute the batch update request
     sheet.values().append(
-        spreadsheetId=FRONTEIRA_SPREADSHEET_ID,
-        range=FRONTEIRA_TEAMS_SHEET,
+        spreadsheetId=constants.FRONTEIRA_SPREADSHEET_ID,
+        range=constants.FRONTEIRA_TEAMS_SHEET,
         body={'values': requests},
         valueInputOption='RAW'
     ).execute()
     
     
 def simple_data_cell(value, sheet_id, row_index, col_index, team_index, colour_style) -> dict:
-    team_colour = COLOURS[team_index%len(COLOURS)][colour_style]
+    team_colour = constants.COLOURS[team_index%len(constants.COLOURS)][colour_style]
     if team_index == 0:
-        team_colour = MY_TEAM_COLOURS[colour_style]
+        team_colour = constants.MY_TEAM_COLOURS[colour_style]
     return {
         "updateCells": {
             "rows": [
@@ -255,7 +258,7 @@ def mean_time_per_lap(total_time_str, num_laps) -> str:
 
 
 def team_fastest_lap(team_laps) -> list:
-    sorted_laps_per_time = sorted(team_laps, key=lambda lap: lap[TEAM_INFO_LAP_TIME_INDEX])
+    sorted_laps_per_time = sorted(team_laps, key=lambda lap: lap[constants.TEAM_INFO_LAP_TIME_INDEX])
     return sorted_laps_per_time[0]
 
 
@@ -264,13 +267,13 @@ def mean_time_per_driver(team_laps) -> list:
     driver_times = {}
     driver_times_mean = {}
     for lap in team_laps:
-        if "Pit In" not in lap[TEAM_INFO_LAP_TIME_INDEX]:
-            if lap[TEAM_INFO_DRIVER_INDEX] not in list(driver_times.keys()):
+        if "Pit In" not in lap[constants.TEAM_INFO_LAP_TIME_INDEX]:
+            if lap[constants.TEAM_INFO_DRIVER_INDEX] not in list(driver_times.keys()):
                 # driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = [lap[TEAM_INFO_LAP_TIME_INDEX]]
-                driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = {lap[TEAM_INFO_LAP_INDEX]:lap[TEAM_INFO_LAP_TIME_INDEX]}  # ignore
+                driver_times[lap[constants.TEAM_INFO_DRIVER_INDEX]] = {lap[constants.TEAM_INFO_LAP_INDEX]:lap[constants.TEAM_INFO_LAP_TIME_INDEX]}  # ignore
             else:
                 # driver_times[lap[TEAM_INFO_DRIVER_INDEX]].append(lap[TEAM_INFO_LAP_TIME_INDEX])
-                driver_times[lap[TEAM_INFO_DRIVER_INDEX]][lap[TEAM_INFO_LAP_INDEX]] = lap[TEAM_INFO_LAP_TIME_INDEX]
+                driver_times[lap[constants.TEAM_INFO_DRIVER_INDEX]][lap[constants.TEAM_INFO_LAP_INDEX]] = lap[constants.TEAM_INFO_LAP_TIME_INDEX]
 
     for driver in list(driver_times.keys()):
         last_lap = None
