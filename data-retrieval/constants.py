@@ -13,7 +13,8 @@ TEAM_NR_POS = 2
 DRIVER_POS = 3
 
 MY_TEAM = '7'
-RIVALS = ['1', '2', '3', '4', '5', '6', '11', '12', '22', '31', '33', '34', '39', '42', '46', '48', '58', '60', '75']
+RIVALS = ['3', '1', '2', '60', '11', '4', '34', '5', '6', '12', '15', '58', '46', '29', '22']
+
 OBSERVING_TEAMS = [MY_TEAM]+RIVALS
 
 MOCK_DATA_FILES = ["mock-filipe-carvalho-request.json", "mock-mario-oliveira-request.json", "mock-nuno-pires-request.json", "mock-vitor-conceicao-request.json", ]

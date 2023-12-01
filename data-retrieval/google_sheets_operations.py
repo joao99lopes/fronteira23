@@ -202,7 +202,7 @@ def data_dict_to_list(new_values:dict, old_values:dict):
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     for key in list(new_values.keys()):
-        # if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
+        if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
@@ -267,7 +267,7 @@ def mean_time_per_driver(team_laps) -> list:
     driver_times = {}
     driver_times_mean = {}
     for lap in team_laps:
-        if "Pit In" not in lap[constants.TEAM_INFO_LAP_TIME_INDEX]:
+        if "Pit " not in lap[constants.TEAM_INFO_LAP_TIME_INDEX]:
             if lap[constants.TEAM_INFO_DRIVER_INDEX] not in list(driver_times.keys()):
                 # driver_times[lap[TEAM_INFO_DRIVER_INDEX]] = [lap[TEAM_INFO_LAP_TIME_INDEX]]
                 driver_times[lap[constants.TEAM_INFO_DRIVER_INDEX]] = {lap[constants.TEAM_INFO_LAP_INDEX]:lap[constants.TEAM_INFO_LAP_TIME_INDEX]}  # ignore
