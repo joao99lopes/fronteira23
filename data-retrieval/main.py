@@ -35,8 +35,8 @@ def main():
             else:
                 last_value = parse_sheet_values(values)
 
-            new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
-            # new_value = retrieve_mock_data()                            # USE IN DEV
+            # new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
+            new_value = retrieve_mock_data()                            # USE IN DEV
             if (new_value != last_value):
                 print("######################\n##### NEW VALUES #####\n######################\n")
                 if has_data==False:
@@ -46,7 +46,7 @@ def main():
             append_to_teams_sheet(sheet, new_data)
             
             last_value=new_value
-            time.sleep(5)
+            time.sleep(REQUEST_TIMEOUT)
             print("\n--------\n")
         except HttpError as err:
             print(datetime.now())

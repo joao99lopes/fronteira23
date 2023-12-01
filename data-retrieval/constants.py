@@ -13,7 +13,7 @@ TEAM_NR_POS = 2
 DRIVER_POS = 3
 
 MY_TEAM = '7'
-RIVALS = ['10', '17']
+RIVALS = ['1', '2', '3', '4', '5', '6', '11', '12', '22', '31', '33', '34', '39', '42', '46', '48', '58', '60', '75']
 OBSERVING_TEAMS = [MY_TEAM]+RIVALS
 
 MOCK_DATA_FILES = ["mock-filipe-carvalho-request.json", "mock-mario-oliveira-request.json", "mock-nuno-pires-request.json", "mock-vitor-conceicao-request.json", ]
@@ -32,28 +32,37 @@ INFO_TEAM_TEMPLATE_HEADER=[
     ['DRIVER 4', 'drivername4', 'meantime', 'fastlaptime'],
     ['DRIVER 5', 'drivername5', 'meantime', 'fastlaptime'],
 ]
-INFO_TEAM_TABLE_HEADER = ['LAP', 'DAY TIME', 'POS', 'LAP TIME', 'TOTAL TIME', 'DRIVER']
+INFO_TEAM_TABLE_HEADER = ['LAP ID', 'LAP', 'DAY TIME', 'POS', 'LAP TIME', 'TOTAL TIME', 'DRIVER']
 
-TEAM_INFO_LAP_INDEX = 0
-TEAM_INFO_DAY_TIME_INDEX = 1
-TEAM_INFO_POS_INDEX = 2
-TEAM_INFO_LAP_TIME_INDEX = 3
-TEAM_INFO_TOTAL_TIME_INDEX = 4
-TEAM_INFO_DRIVER_INDEX = 5
+TEAM_INFO_LAP_ID_INDEX = 0
+TEAM_INFO_LAP_INDEX = 1
+TEAM_INFO_DAY_TIME_INDEX = 2
+TEAM_INFO_POS_INDEX = 3
+TEAM_INFO_LAP_TIME_INDEX = 4
+TEAM_INFO_TOTAL_TIME_INDEX = 5
+TEAM_INFO_DRIVER_INDEX = 6
 
-TEAM_1_COLORS = {
+MY_TEAM_COLOURS = {
     'background' : {"red": 0.8, "green": 1.0, "blue": 0.8},
     'pilot_change' : {"red": 0.7, "green": 1.0, "blue": 0.7},
 }
 
-TEAM_2_COLORS = {
-    'background' : {"red": 1.0, "green": 0.8, "blue": 0.8},
-    'pilot_change' : {"red": 1.0, "green": 0.7, "blue": 0.7},
-}
-
-TEAM_3_COLORS = {
+TEAM_1_COLOURS = {
     'background' : {"red": 0.7, "green": 0.8, "blue": 1.0},
     'pilot_change' : {"red": 0.8, "green": 0.8, "blue": 1.0},
 }
 
-COLORS = [TEAM_1_COLORS, TEAM_2_COLORS, TEAM_3_COLORS]
+TEAM_2_COLOURS = {
+    'background' : {"red": 1.0, "green": 0.8, "blue": 0.8},
+    'pilot_change' : {"red": 1.0, "green": 0.7, "blue": 0.7},
+}
+
+TEAM_3_COLOURS = {
+    'background' : {"red": 1.0, "green": 1.0, "blue": 0.8},
+    'pilot_change' : {"red": 1.0, "green": 1.0, "blue": 0.5},
+}
+
+
+COLOURS = [TEAM_1_COLOURS, TEAM_2_COLOURS, TEAM_3_COLOURS]
+
+REQUEST_TIMEOUT = 10

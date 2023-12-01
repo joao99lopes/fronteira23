@@ -152,9 +152,10 @@ def append_to_teams_sheet(sheet, data_to_add):
         lap_info['team_nr'] = team_data_line[2]
         lap_info['team_best_lap'] = team_data_line[8]
         if lap_info["team_nr"] not in data_per_team.keys():
-            data_per_team[lap_info['team_nr']] = {lap_info['LAP']:list(lap_info.values())}
+            data_per_team[lap_info['team_nr']] = {'0':['0']+list(lap_info.values())}
         else:
-            data_per_team[lap_info['team_nr']][lap_info['LAP']] = list(lap_info.values())
+            lap_id = str(len(data_per_team[lap_info['team_nr']]))
+            data_per_team[lap_info['team_nr']][lap_id] = [lap_id]+list(lap_info.values())
             
     for i in range(len(OBSERVING_TEAMS)):
         if OBSERVING_TEAMS[i] in data_per_team.keys():
@@ -166,7 +167,7 @@ def append_to_teams_sheet(sheet, data_to_add):
             # write header
             requests.append(simple_data_cell(OBSERVING_TEAMS[i], FRONTEIRA_TEAMS_INFO_SHEET_ID, 0, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             requests.append(simple_data_cell(last_lap_info[TEAM_INFO_POS_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 3, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
-            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], int(last_lap_info[TEAM_INFO_LAP_INDEX])), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
+            requests.append(simple_data_cell(mean_time_per_lap(last_lap_info[TEAM_INFO_TOTAL_TIME_INDEX], len(team_data_to_add)), FRONTEIRA_TEAMS_INFO_SHEET_ID, 4, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             fastest_lap = team_fastest_lap(list(team_data_to_add.values()))
             requests.append(simple_data_cell(fastest_lap[TEAM_INFO_LAP_TIME_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 1+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
             requests.append(simple_data_cell(fastest_lap[TEAM_INFO_DRIVER_INDEX], FRONTEIRA_TEAMS_INFO_SHEET_ID, 5, 2+i*len(INFO_TEAM_TABLE_HEADER), i, 'background'))
@@ -198,7 +199,7 @@ def data_dict_to_list(new_values:dict, old_values:dict):
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
     for key in list(new_values.keys()):
-        if key not in list (old_values.keys()) or new_values[key] != old_values[key]:
+        if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
@@ -210,7 +211,10 @@ def print_teams_info_header(sheet):
     for i in range(len(OBSERVING_TEAMS)):
         for j in range(len(INFO_TEAM_TEMPLATE_HEADER)):
             for k in range(len(INFO_TEAM_TEMPLATE_HEADER[j])):
-                requests[j][k + i * len(INFO_TEAM_TABLE_HEADER)] = INFO_TEAM_TEMPLATE_HEADER[j][k]
+                field = INFO_TEAM_TEMPLATE_HEADER[j][k]
+                if field == "teamNr":
+                    field = OBSERVING_TEAMS[i]
+                requests[j][k + i * len(INFO_TEAM_TABLE_HEADER)] = field
     requests.append(empty_line)
     requests.append(INFO_TEAM_TABLE_HEADER * len(OBSERVING_TEAMS))
 
@@ -223,14 +227,17 @@ def print_teams_info_header(sheet):
     ).execute()
     
     
-def simple_data_cell(value, sheet_id, row_index, col_index, team_index, color_style) -> dict:
+def simple_data_cell(value, sheet_id, row_index, col_index, team_index, colour_style) -> dict:
+    team_colour = COLOURS[team_index%len(COLOURS)][colour_style]
+    if team_index == 0:
+        team_colour = MY_TEAM_COLOURS[colour_style]
     return {
         "updateCells": {
             "rows": [
                 {
                     "values": {
                         "userEnteredValue": {"stringValue": value},
-                        "userEnteredFormat": {"backgroundColor": COLORS[team_index][color_style]}
+                        "userEnteredFormat": {"backgroundColor": team_colour}
                         }
                 }
             ],
