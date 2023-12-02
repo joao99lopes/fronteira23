@@ -149,7 +149,7 @@ def append_to_teams_sheet(sheet, data_to_add):
         lap_info['LAP'] = team_data_line[4]
         lap_info['DAY TIME'] = team_data_line[0]
         lap_info['POS'] = team_data_line[1]
-        lap_info['LAP TIME'] = team_data_line[7]
+        lap_info['LAP TIME'] = team_data_line[6]
         lap_info['TOTAL TIME'] = team_data_line[5]
         lap_info['DRIVER'] = team_data_line[3]
         lap_info['team_nr'] = team_data_line[2]
