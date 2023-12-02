@@ -42,11 +42,11 @@ def main():
                 print("######################\n##### NEW VALUES #####\n######################\n")
                 if has_data==False:
                     write_header(sheet)
-            new_data=data_dict_to_list(new_value, last_value)
-            append_to_general_sheet(sheet, new_data, last_value)
-            append_to_teams_sheet(sheet, new_data)
-            
-            last_value=new_value
+                new_data=data_dict_to_list(new_value, last_value)
+                append_to_general_sheet(sheet, new_data, last_value)
+                append_to_teams_sheet(sheet, new_data)
+                
+                last_value=new_value
             time.sleep(constants.REQUEST_TIMEOUT)
             print("\n--------\n")
         except HttpError as err:
