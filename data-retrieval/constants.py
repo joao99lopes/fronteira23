@@ -7,14 +7,14 @@ FRONTEIRA_TEAMS_SHEET = 'TEAMS INFO'
 FRONTEIRA_DB_SHEET_ID = 0
 FRONTEIRA_TEAMS_INFO_SHEET_ID = 1973410618
 
-COLUMNS_TO_USE = ['DateTime', 'Position(Pos.)', 'Numero(No.)', 'Nom(Driver)', 'Groupe(Grp)', 'NbTour(Laps)', 'TpsCumule(Total time)', 'TpsTour(Lap time)', 'MeilleurTour(Best lap)', 'PenaliteNbTour(Laps penality)']
+COLUMNS_TO_USE = ['DateTime', 'Position', 'Numero', 'Nom', 'NbTour', 'TpsCumule', 'TpsTour', 'MeilleurTour', 'PenaliteNbTour']
 
 TEAM_NR_POS = 2
 DRIVER_POS = 3
 
 MY_TEAM = '7'
-RIVALS = ['3', '1', '2', '60', '11', '4', '34', '5', '6', '12', '15', '58', '46', '29', '22']
-
+RIVALS = ['1', '2', '60', '11', '4', '34', '5', '6', '15', '58', '46', '22']
+# 3, 12
 OBSERVING_TEAMS = [MY_TEAM]+RIVALS
 
 MOCK_DATA_FILES = ["mock-filipe-carvalho-request.json", "mock-mario-oliveira-request.json", "mock-nuno-pires-request.json", "mock-vitor-conceicao-request.json", ]

@@ -146,14 +146,13 @@ def append_to_teams_sheet(sheet, data_to_add):
 
     for team_data_line in data_to_add:
         lap_info = {}
-        lap_info['LAP'] = team_data_line[5]
+        lap_info['LAP'] = team_data_line[4]
         lap_info['DAY TIME'] = team_data_line[0]
         lap_info['POS'] = team_data_line[1]
         lap_info['LAP TIME'] = team_data_line[7]
-        lap_info['TOTAL TIME'] = team_data_line[6]
+        lap_info['TOTAL TIME'] = team_data_line[5]
         lap_info['DRIVER'] = team_data_line[3]
         lap_info['team_nr'] = team_data_line[2]
-        lap_info['team_best_lap'] = team_data_line[8]
         if lap_info["team_nr"] not in data_per_team.keys():
             data_per_team[lap_info['team_nr']] = {'0':['0']+list(lap_info.values())}
         else:
@@ -200,7 +199,6 @@ def append_to_teams_sheet(sheet, data_to_add):
 def data_dict_to_list(new_values:dict, old_values:dict):
     res_list = []
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
     for key in list(new_values.keys()):
         if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))

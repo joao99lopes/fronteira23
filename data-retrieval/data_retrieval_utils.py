@@ -50,17 +50,19 @@ def parse_retrieved_data(data:dict):
         if i =="Donnees":
             lines = data[i]
             for line in lines:
-                if line[constants.TEAM_NR_POS] in constants.OBSERVING_TEAMS: 
+                line = line[1:]
+                team_nr = line[constants.TEAM_NR_POS].split("}")[1]
+                if team_nr in constants.OBSERVING_TEAMS: 
+                    line[constants.TEAM_NR_POS] = team_nr
                     fields_per_team[line[constants.TEAM_NR_POS]] = line
+    col = col[1:]
+#['DateTime', 'Position(Pos.)', 'Numero(No.)', 'Nom(Driver)', 'Groupe(Grp)', 'NbTour(Laps)', 'TpsCumule(Total time)', 'TpsTour(Lap time)', 'MeilleurTour(Best lap)', 'PenaliteNbTour(Laps penality)']
     
     for team_id in list(fields_per_team.keys()):
         team_res = {}
         for i in range(len(col)):
-            plus=""
-            if col[i]['Texte'] != '':
-                plus = f"({col[i]['Texte']})"
-            if f"{col[i]['Nom']}{plus}" in constants.COLUMNS_TO_USE:
-                team_res[f"{col[i]['Nom']}{plus}"] = fields_per_team[team_id][i]
+            if f"{col[i]['Nom']}" in constants.COLUMNS_TO_USE:
+                team_res[f"{col[i]['Nom']}"] = fields_per_team[team_id][i]
         res[team_id] = team_res
 
     return res

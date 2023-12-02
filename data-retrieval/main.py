@@ -33,8 +33,8 @@ def main():
             if not values:
                 print('No data found. DB is empty.')
                 has_data=False
-            else:
-                last_value = parse_sheet_values(values)
+            # else:
+            #     last_value = parse_sheet_values(values)
 
             new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
 #            new_value = retrieve_mock_data()                            # USE IN DEV
