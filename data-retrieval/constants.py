@@ -13,7 +13,7 @@ TEAM_NR_POS = 2
 DRIVER_POS = 3
 
 MY_TEAM = '7'
-RIVALS = ['1', '2', '60', '11', '4', '34', '5', '6', '15', '58', '46', '22']
+RIVALS = ['1', '2', '60', '11', '4', '34', '6', '46', '22', '3']
 # 3, 12
 OBSERVING_TEAMS = [MY_TEAM]+RIVALS
 

@@ -153,6 +153,9 @@ def append_to_teams_sheet(sheet, data_to_add):
         lap_info['TOTAL TIME'] = team_data_line[5]
         lap_info['DRIVER'] = team_data_line[3]
         lap_info['team_nr'] = team_data_line[2]
+        
+        if "Pit" in lap_info['LAP TIME']:
+            continue
         if lap_info["team_nr"] not in data_per_team.keys():
             data_per_team[lap_info['team_nr']] = {'0':['0']+list(lap_info.values())}
         else:
@@ -200,7 +203,7 @@ def data_dict_to_list(new_values:dict, old_values:dict):
     res_list = []
     date_and_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     for key in list(new_values.keys()):
-        if (key not in list(old_values.keys())) or (new_values[key] != old_values[key]):
+        if (key not in list(old_values.keys())) or (new_values[key]["NbTour"] != old_values[key]["NbTour"]):
             res_list.append([date_and_time]+list({col:new_values[key][col] for col in new_values[key]}.values()))
     return res_list
     
@@ -276,9 +279,12 @@ def mean_time_per_driver(team_laps) -> list:
     for driver in list(driver_times.keys()):
         last_lap = None
         filtered_laps = []
-        for lap_nr in sorted(list(driver_times[driver].keys())):
-            if not (last_lap == None or int(last_lap) < int(lap_nr)-1):
-                filtered_laps.append(driver_times[driver][lap_nr])
+        for lap_nr_str in sorted(list(driver_times[driver].keys())):
+            lap_nr = lap_nr_str
+            if " " in lap_nr_str:
+                lap_nr = lap_nr_str.split(" ")[1]
+            if lap_nr != 0 and not (last_lap == None or int(last_lap) < int(lap_nr)-1):
+                filtered_laps.append(driver_times[driver][lap_nr_str])
             last_lap = lap_nr
         driver_times_mean[driver] = filtered_laps
 
@@ -286,6 +292,8 @@ def mean_time_per_driver(team_laps) -> list:
         total_time_sec = 0
         for lap_time in driver_times_mean[driver]:
             lap_time_str = lap_time.split(".")[0].split(":")
+            if len(lap_time_str) < 2:
+                continue
             total_time_sec += int(lap_time_str[0])*60 + int(lap_time_str[1])
         
         mean_time = "N/A"

@@ -29,8 +29,6 @@ def retrieve_data(ts:str) -> dict:
         data = json.loads(response_text)
         res = parse_retrieved_data(data)
         print(datetime.now())
-        for i in res.keys():
-            print(f"{i}: {res[i]}")
         return res
 
     else:
@@ -51,7 +49,9 @@ def parse_retrieved_data(data:dict):
             lines = data[i]
             for line in lines:
                 line = line[1:]
-                team_nr = line[constants.TEAM_NR_POS].split("}")[1]
+                team_nr = line[constants.TEAM_NR_POS]
+                if "}" in team_nr:
+                    team_nr = line[constants.TEAM_NR_POS].split("}")[1]
                 if team_nr in constants.OBSERVING_TEAMS: 
                     line[constants.TEAM_NR_POS] = team_nr
                     fields_per_team[line[constants.TEAM_NR_POS]] = line
@@ -62,7 +62,10 @@ def parse_retrieved_data(data:dict):
         team_res = {}
         for i in range(len(col)):
             if f"{col[i]['Nom']}" in constants.COLUMNS_TO_USE:
-                team_res[f"{col[i]['Nom']}"] = fields_per_team[team_id][i]
+                new_value = fields_per_team[team_id][i]
+                if "}" in new_value:
+                    new_value = new_value.split("}")[1]
+                team_res[f"{col[i]['Nom']}"] = new_value
         res[team_id] = team_res
 
     return res

@@ -38,15 +38,15 @@ def main():
 
             new_value = retrieve_data(ts=str(int(time.time())))       # USE IN PROD 
 #            new_value = retrieve_mock_data()                            # USE IN DEV
-            if (new_value != last_value):
-                print("######################\n##### NEW VALUES #####\n######################\n")
+            if (new_value is not None and new_value != last_value):
                 if has_data==False:
                     write_header(sheet)
                 new_data=data_dict_to_list(new_value, last_value)
+                for line in new_data:
+                    print("######################\n##### NEW VALUES #####\n######################\n")
+                    print(line)
                 append_to_general_sheet(sheet, new_data, last_value)
                 append_to_teams_sheet(sheet, new_data)
-                
-                last_value=new_value
             time.sleep(constants.REQUEST_TIMEOUT)
             print("\n--------\n")
         except HttpError as err:
